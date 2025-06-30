@@ -1,8 +1,26 @@
-import { Search, Star, Building2, Edit3 } from 'lucide-react'
+'use client'
+
+import { Star, Building2, Edit3 } from 'lucide-react'
 import StoreList from '@/components/StoreList'
-import Link from 'next/link'  // ← 最上部のimport文に追加
+import PlacesAutocomplete from '@/components/PlacesAutocomplete'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export default function HomePage() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const router = useRouter()
+  
+  const handlePlaceSelect = (place: { place_id: string; name: string; formatted_address: string }) => {
+    // 選択された店舗でレビューページに遷移
+    const params = new URLSearchParams({
+      storeName: place.name,
+      placeId: place.place_id,
+      address: place.formatted_address || ''
+    })
+    router.push(`/review/new?${params.toString()}`)
+  }
+  
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* ヒーローセクション */}
@@ -25,12 +43,12 @@ export default function HomePage() {
           <p className="text-gray-600 mb-6">店舗名を入力してレビューを投稿してください</p>
           
           {/* 店舗検索フィールド */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="店舗名を入力してください..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+          <div className="mb-6">
+            <PlacesAutocomplete
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onPlaceSelect={handlePlaceSelect}
+              placeholder="店舗名を入力してください（Google Places検索対応）"
             />
           </div>
           

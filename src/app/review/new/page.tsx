@@ -1,17 +1,55 @@
 'use client'
 
-import { useState } from 'react'
-import { Star, ArrowLeft } from 'lucide-react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Star, ArrowLeft, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import PlacesAutocomplete from '@/components/PlacesAutocomplete'
+import GoogleMap from '@/components/GoogleMap'
 
-export default function NewReviewPage() {
+interface PlaceResult {
+  place_id: string
+  formatted_address: string
+  name: string
+  geometry?: {
+    location: {
+      lat: number
+      lng: number
+    }
+  }
+}
+
+function NewReviewForm() {
   const [storeName, setStoreName] = useState('')
   const [rating, setRating] = useState(0)
   const [content, setContent] = useState('')
   const [reviewerName, setReviewerName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-　const supabase = createClientComponentClient()
+  const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
+  const [showMap, setShowMap] = useState(false)
+  const searchParams = useSearchParams()
+  const supabase = createClientComponentClient()
+
+  // URLパラメータから店舗情報を取得
+  useEffect(() => {
+    const storeNameParam = searchParams.get('storeName')
+    const placeIdParam = searchParams.get('placeId')
+    const addressParam = searchParams.get('address')
+    
+    if (storeNameParam) {
+      setStoreName(storeNameParam)
+      
+      if (placeIdParam) {
+        setSelectedPlace({
+          place_id: placeIdParam,
+          name: storeNameParam,
+          formatted_address: addressParam || ''
+        })
+        setShowMap(true)
+      }
+    }
+  }, [searchParams])
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
   setIsSubmitting(true)
@@ -20,24 +58,44 @@ export default function NewReviewPage() {
     // 1. 店舗を検索または作成
     let storeId
     
-    // まず既存の店舗を検索
-    const { data: existingStore } = await supabase
-      .from('stores')
-      .select('id')
-      .eq('name', storeName)
-      .single()
+    // Google Place IDがある場合は既存店舗を検索
+    let existingStore = null
+    if (selectedPlace?.place_id) {
+      const { data } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('google_place_id', selectedPlace.place_id)
+        .single()
+      existingStore = data
+    }
+    
+    // 既存店舗がない場合は店舗名で検索
+    if (!existingStore) {
+      const { data } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('name', storeName)
+        .single()
+      existingStore = data
+    }
     
     if (existingStore) {
       // 既存店舗を使用
       storeId = existingStore.id
     } else {
       // 新規店舗を作成
+      const storeData = {
+        name: storeName,
+        phone: '', // 一旦空文字で作成
+        address: selectedPlace?.formatted_address || null,
+        google_place_id: selectedPlace?.place_id || null,
+        latitude: selectedPlace?.geometry?.location.lat || null,
+        longitude: selectedPlace?.geometry?.location.lng || null,
+      }
+      
       const { data: newStore, error: storeError } = await supabase
         .from('stores')
-        .insert({
-          name: storeName,
-          phone: '', // 一旦空文字で作成
-        })
+        .insert(storeData)
         .select('id')
         .single()
       
@@ -66,6 +124,8 @@ export default function NewReviewPage() {
     setRating(0)
     setContent('')
     setReviewerName('')
+    setSelectedPlace(null)
+    setShowMap(false)
     
 } catch (error) {
   console.error('投稿エラー詳細:', error)
@@ -77,7 +137,7 @@ export default function NewReviewPage() {
   
   const errorMessage = error instanceof Error ? error.message : 
     (error && typeof error === 'object' && 'message' in error) ? 
-    (error as any).message : String(error)
+    (error as { message: string }).message : String(error)
   
   alert(`投稿エラー詳細: ${errorMessage}`)
 } finally {
@@ -100,20 +160,66 @@ export default function NewReviewPage() {
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 店舗名 */}
+            {/* 店舗検索 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 店舗名 <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
+              <PlacesAutocomplete
                 value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="例：カフェ・ド・パリ"
-                required
+                onChange={setStoreName}
+                onPlaceSelect={(place) => {
+                  setSelectedPlace(place)
+                  setStoreName(place.name)
+                  setShowMap(true)
+                }}
+                placeholder="店舗名を入力してください（Google Places検索対応）"
               />
+              {!selectedPlace && storeName && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Google Placesで見つからない場合、手動で入力された店舗名を使用します
+                </p>
+              )}
             </div>
+
+            {/* 選択された店舗情報 */}
+            {selectedPlace && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="flex items-start">
+                  <MapPin className="w-5 h-5 text-blue-600 mr-2 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium text-blue-900">{selectedPlace.name}</h3>
+                    {selectedPlace.formatted_address && (
+                      <p className="text-sm text-blue-700">{selectedPlace.formatted_address}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 地図表示 */}
+            {showMap && selectedPlace?.geometry && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  店舗位置
+                </label>
+                <GoogleMap
+                  center={{
+                    lat: selectedPlace.geometry.location.lat,
+                    lng: selectedPlace.geometry.location.lng
+                  }}
+                  markers={[{
+                    position: {
+                      lat: selectedPlace.geometry.location.lat,
+                      lng: selectedPlace.geometry.location.lng
+                    },
+                    title: selectedPlace.name,
+                    info: `<div><strong>${selectedPlace.name}</strong><br/>${selectedPlace.formatted_address}</div>`
+                  }]}
+                  className="w-full h-64 rounded-lg border"
+                />
+              </div>
+            )}
 
             {/* 評価 */}
             <div>
@@ -184,5 +290,18 @@ export default function NewReviewPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function NewReviewPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+        <p className="text-gray-500">読み込み中...</p>
+      </div>
+    </div>}>
+      <NewReviewForm />
+    </Suspense>
   )
 }

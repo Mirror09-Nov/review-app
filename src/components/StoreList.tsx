@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { MapPin, Star } from 'lucide-react'
 
-const supabase = createClientComponentClient()
+// Supabaseクライアントは関数内で初期化
 
 interface Store {
   id: string
@@ -26,6 +26,7 @@ export default function StoreList() {
 
   const fetchStores = async () => {
     try {
+      const supabase = createClientComponentClient()
       const { data, error } = await supabase
         .from('stores')
         .select('*')

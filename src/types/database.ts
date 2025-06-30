@@ -8,6 +8,9 @@ export interface Database {
           phone: string
           address: string | null
           description: string | null
+          google_place_id: string | null
+          latitude: number | null
+          longitude: number | null
           created_at: string
           updated_at: string
         }
@@ -17,6 +20,9 @@ export interface Database {
           phone: string
           address?: string | null
           description?: string | null
+          google_place_id?: string | null
+          latitude?: number | null
+          longitude?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -26,6 +32,9 @@ export interface Database {
           phone?: string
           address?: string | null
           description?: string | null
+          google_place_id?: string | null
+          latitude?: number | null
+          longitude?: number | null
           updated_at?: string
         }
       }
