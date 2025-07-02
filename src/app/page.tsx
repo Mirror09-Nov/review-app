@@ -11,13 +11,30 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const router = useRouter()
   
-  const handlePlaceSelect = (place: { place_id: string; name: string; formatted_address: string }) => {
+  const handlePlaceSelect = (place: { 
+    place_id: string; 
+    name: string; 
+    formatted_address: string;
+    geometry?: {
+      location: {
+        lat: number;
+        lng: number;
+      }
+    }
+  }) => {
     // 選択された店舗でレビューページに遷移
     const params = new URLSearchParams({
       storeName: place.name,
       placeId: place.place_id,
       address: place.formatted_address || ''
     })
+    
+    // 位置情報があれば追加
+    if (place.geometry?.location) {
+      params.set('lat', place.geometry.location.lat.toString())
+      params.set('lng', place.geometry.location.lng.toString())
+    }
+    
     router.push(`/review/new?${params.toString()}`)
   }
   

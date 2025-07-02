@@ -36,16 +36,30 @@ function NewReviewForm() {
     const storeNameParam = searchParams.get('storeName')
     const placeIdParam = searchParams.get('placeId')
     const addressParam = searchParams.get('address')
+    const latParam = searchParams.get('lat')
+    const lngParam = searchParams.get('lng')
     
     if (storeNameParam) {
       setStoreName(storeNameParam)
       
       if (placeIdParam) {
-        setSelectedPlace({
+        const placeData: PlaceResult = {
           place_id: placeIdParam,
           name: storeNameParam,
           formatted_address: addressParam || ''
-        })
+        }
+        
+        // 位置情報があれば追加
+        if (latParam && lngParam) {
+          placeData.geometry = {
+            location: {
+              lat: parseFloat(latParam),
+              lng: parseFloat(lngParam)
+            }
+          }
+        }
+        
+        setSelectedPlace(placeData)
         setShowMap(true)
       }
     }
@@ -161,10 +175,26 @@ function NewReviewForm() {
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 店舗検索 */}
+            {/* 選択された店舗情報を最上位に表示 */}
+            {selectedPlace && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="flex items-start">
+                  <MapPin className="w-5 h-5 text-blue-600 mr-2 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium text-blue-900 text-lg">{selectedPlace.name}</h3>
+                    {selectedPlace.formatted_address && (
+                      <p className="text-sm text-blue-700">{selectedPlace.formatted_address}</p>
+                    )}
+                    <p className="text-xs text-green-600 mt-1">✅ 前ページで選択された店舗</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 店舗検索（変更したい場合のみ） */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                店舗名 <span className="text-red-500">*</span>
+                店舗名を変更する場合 <span className="text-gray-500">（任意）</span>
               </label>
               <PlacesAutocomplete
                 value={storeName}
@@ -174,7 +204,7 @@ function NewReviewForm() {
                   setStoreName(place.name)
                   setShowMap(true)
                 }}
-                placeholder="店舗名を入力してください（Google Places検索対応）"
+                placeholder="別の店舗を検索する場合は入力してください"
               />
               {!selectedPlace && storeName && (
                 <p className="text-sm text-gray-500 mt-1">
@@ -182,21 +212,6 @@ function NewReviewForm() {
                 </p>
               )}
             </div>
-
-            {/* 選択された店舗情報 */}
-            {selectedPlace && (
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="flex items-start">
-                  <MapPin className="w-5 h-5 text-blue-600 mr-2 mt-0.5" />
-                  <div>
-                    <h3 className="font-medium text-blue-900">{selectedPlace.name}</h3>
-                    {selectedPlace.formatted_address && (
-                      <p className="text-sm text-blue-700">{selectedPlace.formatted_address}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* 地図表示 */}
             {showMap && selectedPlace?.geometry && (
@@ -223,13 +238,22 @@ function NewReviewForm() {
             )}
 
             {/* デバッグ情報 */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="bg-gray-100 p-2 rounded text-xs">
-                <p>showMap: {showMap ? 'true' : 'false'}</p>
-                <p>selectedPlace: {selectedPlace ? 'exists' : 'null'}</p>
-                <p>geometry: {selectedPlace?.geometry ? 'exists' : 'null'}</p>
-              </div>
-            )}
+            <div className="bg-gray-100 p-2 rounded text-xs mb-4">
+              <p><strong>🔍 デバッグ情報:</strong></p>
+              <p>showMap: {showMap ? 'true' : 'false'}</p>
+              <p>selectedPlace: {selectedPlace ? 'exists' : 'null'}</p>
+              <p>geometry: {selectedPlace?.geometry ? 'exists' : 'null'}</p>
+              <p>storeName: {storeName || 'empty'}</p>
+              {selectedPlace?.geometry && (
+                <>
+                  <p>lat: {selectedPlace.geometry.location.lat}</p>
+                  <p>lng: {selectedPlace.geometry.location.lng}</p>
+                </>
+              )}
+              <p><strong>URLパラメータ:</strong></p>
+              <p>lat param: {searchParams.get('lat') || 'なし'}</p>
+              <p>lng param: {searchParams.get('lng') || 'なし'}</p>
+            </div>
 
             {/* 評価 */}
             <div>
