@@ -300,7 +300,7 @@ function NewReviewForm() {
                 <p>selectedPlace: {selectedPlace ? 'exists' : 'null'}</p>
                 <p>geometry: {selectedPlace?.geometry ? 'exists' : 'null'}</p>
                 <p>storeName: {storeName || 'empty'}</p>
-                {selectedPlace?.geometry && (
+                {selectedPlace?.geometry?.location && (
                   <>
                     <p>lat: {selectedPlace.geometry.location.lat}</p>
                     <p>lng: {selectedPlace.geometry.location.lng}</p>
