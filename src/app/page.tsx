@@ -9,6 +9,17 @@ import { useState } from 'react'
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedPlace, setSelectedPlace] = useState<{
+    place_id: string; 
+    name: string; 
+    formatted_address: string;
+    geometry?: {
+      location: {
+        lat: number;
+        lng: number;
+      }
+    }
+  } | null>(null)
   const router = useRouter()
   
   const handlePlaceSelect = (place: { 
@@ -22,17 +33,29 @@ export default function HomePage() {
       }
     }
   }) => {
-    // 選択された店舗でレビューページに遷移
+    // 店舗情報を保存（まだ画面遷移しない）
+    setSelectedPlace(place)
+    setSearchQuery(place.name)
+  }
+  
+  const handleReviewButtonClick = () => {
+    if (!selectedPlace) {
+      // 店舗が選択されていない場合は通常の遷移
+      router.push('/review/new')
+      return
+    }
+    
+    // 選択された店舗情報でレビューページに遷移
     const params = new URLSearchParams({
-      storeName: place.name,
-      placeId: place.place_id,
-      address: place.formatted_address || ''
+      storeName: selectedPlace.name,
+      placeId: selectedPlace.place_id,
+      address: selectedPlace.formatted_address || ''
     })
     
     // 位置情報があれば追加
-    if (place.geometry?.location) {
-      params.set('lat', place.geometry.location.lat.toString())
-      params.set('lng', place.geometry.location.lng.toString())
+    if (selectedPlace.geometry?.location) {
+      params.set('lat', selectedPlace.geometry.location.lat.toString())
+      params.set('lng', selectedPlace.geometry.location.lng.toString())
     }
     
     router.push(`/review/new?${params.toString()}`)
@@ -69,9 +92,12 @@ export default function HomePage() {
             />
           </div>
           
-          <Link href="/review/new" className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center">
+          <button 
+            onClick={handleReviewButtonClick}
+            className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center"
+          >
             レビューを書く
-          </Link>
+          </button>
         </div>
       </div>
 
