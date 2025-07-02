@@ -12,8 +12,19 @@ interface Store {
   phone: string
   address: string | null
   description: string | null
+  google_place_id: string | null
+  latitude: number | null
+  longitude: number | null
   created_at: string
   updated_at: string
+}
+
+interface StoreWithReviews extends Store {
+  reviews: {
+    rating: number
+  }[]
+  review_count: number
+  average_rating: number
 }
 
 export default function StoreList() {

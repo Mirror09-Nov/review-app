@@ -139,6 +139,17 @@ export default function HomePage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">最近レビューされた店舗</h2>
         <StoreList />
       </div>
+
+      {/* 管理者ログインリンク */}
+      <div className="mt-12 text-center">
+        <Link 
+          href="/admin"
+          className="inline-flex items-center px-6 py-3 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition-colors"
+        >
+          <Building2 className="w-5 h-5 mr-2" />
+          店舗管理者としてログイン
+        </Link>
+      </div>
     </div>
   )
 }
