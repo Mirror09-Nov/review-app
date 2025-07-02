@@ -141,6 +141,7 @@ function NewReviewForm() {
   
   alert(`投稿エラー詳細: ${errorMessage}`)
 } finally {
+  setIsSubmitting(false)
 }
 }
 
@@ -216,8 +217,17 @@ function NewReviewForm() {
                     title: selectedPlace.name,
                     info: `<div><strong>${selectedPlace.name}</strong><br/>${selectedPlace.formatted_address}</div>`
                   }]}
-                  className="w-full h-64 rounded-lg border"
+                  className="w-full h-48 rounded-lg border"
                 />
+              </div>
+            )}
+
+            {/* デバッグ情報 */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="bg-gray-100 p-2 rounded text-xs">
+                <p>showMap: {showMap ? 'true' : 'false'}</p>
+                <p>selectedPlace: {selectedPlace ? 'exists' : 'null'}</p>
+                <p>geometry: {selectedPlace?.geometry ? 'exists' : 'null'}</p>
               </div>
             )}
 
