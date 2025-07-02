@@ -237,23 +237,25 @@ function NewReviewForm() {
               </div>
             )}
 
-            {/* デバッグ情報 */}
-            <div className="bg-gray-100 p-2 rounded text-xs mb-4">
-              <p><strong>🔍 デバッグ情報:</strong></p>
-              <p>showMap: {showMap ? 'true' : 'false'}</p>
-              <p>selectedPlace: {selectedPlace ? 'exists' : 'null'}</p>
-              <p>geometry: {selectedPlace?.geometry ? 'exists' : 'null'}</p>
-              <p>storeName: {storeName || 'empty'}</p>
-              {selectedPlace?.geometry && (
-                <>
-                  <p>lat: {selectedPlace.geometry.location.lat}</p>
-                  <p>lng: {selectedPlace.geometry.location.lng}</p>
-                </>
-              )}
-              <p><strong>URLパラメータ:</strong></p>
-              <p>lat param: {searchParams.get('lat') || 'なし'}</p>
-              <p>lng param: {searchParams.get('lng') || 'なし'}</p>
-            </div>
+            {/* デバッグ情報（開発時のみ表示） */}
+            {process.env.NODE_ENV === 'development' && false && (
+              <div className="bg-gray-100 p-2 rounded text-xs mb-4">
+                <p><strong>🔍 デバッグ情報:</strong></p>
+                <p>showMap: {showMap ? 'true' : 'false'}</p>
+                <p>selectedPlace: {selectedPlace ? 'exists' : 'null'}</p>
+                <p>geometry: {selectedPlace?.geometry ? 'exists' : 'null'}</p>
+                <p>storeName: {storeName || 'empty'}</p>
+                {selectedPlace?.geometry && (
+                  <>
+                    <p>lat: {selectedPlace.geometry.location.lat}</p>
+                    <p>lng: {selectedPlace.geometry.location.lng}</p>
+                  </>
+                )}
+                <p><strong>URLパラメータ:</strong></p>
+                <p>lat param: {searchParams.get('lat') || 'なし'}</p>
+                <p>lng param: {searchParams.get('lng') || 'なし'}</p>
+              </div>
+            )}
 
             {/* 評価 */}
             <div>
