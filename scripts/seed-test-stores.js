@@ -7,6 +7,10 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { config } from 'dotenv'
+
+// .env.localファイルを読み込み
+config({ path: '.env.local' })
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
