@@ -75,9 +75,40 @@ function NewReviewForm() {
         key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '設定済み' : '未設定'
       })
       
+      // Supabaseクライアントの初期化確認
+      console.log('Supabaseクライアント初期化中...')
+      
+      // フォームデータの検証
+      if (!storeName.trim()) {
+        throw new Error('店舗名を入力してください')
+      }
+      if (!rating || rating < 1 || rating > 5) {
+        throw new Error('評価を1-5の範囲で選択してください')
+      }
+      if (!content.trim()) {
+        throw new Error('レビュー内容を入力してください')
+      }
+      
+      console.log('フォームデータ:', {
+        storeName: storeName.trim(),
+        rating,
+        content: content.trim(),
+        reviewerName: reviewerName.trim() || '匿名',
+        selectedPlace: selectedPlace ? '選択済み' : 'なし'
+      })
+      
       // 1. 店舗を検索または作成
       let storeId
       
+      // Supabaseクライアントの接続テスト
+      console.log('Supabase接続テスト中...')
+      const connectionTest = await supabase.from('stores').select('count').limit(1)
+      if (connectionTest.error) {
+        console.error('Supabase接続エラー:', connectionTest.error)
+        throw new Error(`データベース接続エラー: ${connectionTest.error.message}`)
+      }
+      console.log('Supabase接続成功')
+        
       // Google Place IDがある場合は既存店舗を検索
       let existingStore = null
       if (selectedPlace?.place_id) {
@@ -90,6 +121,7 @@ function NewReviewForm() {
         
         if (error && error.code !== 'PGRST116') {
           console.error('Google Place ID検索エラー:', error)
+          throw new Error(`店舗検索エラー: ${error.message}`)
         } else {
           console.log('Google Place ID検索結果:', data)
         }
@@ -98,15 +130,16 @@ function NewReviewForm() {
       
       // 既存店舗がない場合は店舗名で検索
       if (!existingStore) {
-        console.log('店舗名で検索:', storeName)
+        console.log('店舗名で検索:', storeName.trim())
         const { data, error } = await supabase
           .from('stores')
           .select('id')
-          .eq('name', storeName)
+          .eq('name', storeName.trim())
           .single()
         
         if (error && error.code !== 'PGRST116') {
           console.error('店舗名検索エラー:', error)
+          throw new Error(`店舗名検索エラー: ${error.message}`)
         } else {
           console.log('店舗名検索結果:', data)
         }
@@ -120,7 +153,7 @@ function NewReviewForm() {
       // 新規店舗を作成
       const storeData = {
         name: storeName,
-        phone: '', // 一旦空文字で作成
+        phone: null, // 空文字ではなくnullを使用してユニーク制約を回避
         address: selectedPlace?.formatted_address || null,
         google_place_id: selectedPlace?.place_id || null,
         latitude: selectedPlace?.geometry?.location.lat || null,
