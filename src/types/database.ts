@@ -5,7 +5,7 @@ export interface Database {
         Row: {
           id: string
           name: string
-          phone: string
+          phone: string | null
           address: string | null
           description: string | null
           google_place_id: string | null
@@ -17,7 +17,7 @@ export interface Database {
         Insert: {
           id?: string
           name: string
-          phone: string
+          phone?: string | null
           address?: string | null
           description?: string | null
           google_place_id?: string | null

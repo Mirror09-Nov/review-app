@@ -151,14 +151,16 @@ function NewReviewForm() {
       storeId = existingStore.id
     } else {
       // 新規店舗を作成
-      const storeData = {
-        name: storeName,
-        phone: null, // 空文字ではなくnullを使用してユニーク制約を回避
+      const storeData: any = {
+        name: storeName.trim(),
         address: selectedPlace?.formatted_address || null,
         google_place_id: selectedPlace?.place_id || null,
         latitude: selectedPlace?.geometry?.location.lat || null,
         longitude: selectedPlace?.geometry?.location.lng || null,
       }
+      
+      // phoneフィールドを完全に除外（NOT NULL制約がある可能性があるため）
+      // データベースでDEFAULT値が設定されていることを期待
       
       const { data: newStore, error: storeError } = await supabase
         .from('stores')
