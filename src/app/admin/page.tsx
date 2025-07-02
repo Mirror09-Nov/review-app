@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
         }
       }
 
-      // 認証コード生成（実際のSMS送信は実装せず、コンソールに表示）
+      // 認証コード生成
       const code = Math.floor(100000 + Math.random() * 900000).toString()
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10分後
 
@@ -80,9 +80,38 @@ export default function AdminLoginPage() {
         return
       }
 
-      // 開発環境では認証コードをコンソールに表示
-      console.log(`📱 SMS認証コード（開発用）: ${code}`)
-      alert(`開発環境: 認証コード ${code} をコンソールで確認してください`)
+      // SMS送信API呼び出し
+      try {
+        const smsResponse = await fetch('/api/send-sms', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phoneNumber: normalizedPhone,
+            verificationCode: code
+          })
+        })
+
+        const smsResult = await smsResponse.json()
+        
+        if (smsResult.success) {
+          // 開発環境では認証コードも表示
+          if (process.env.NODE_ENV === 'development' && smsResult.code) {
+            console.log(`📱 SMS認証コード（開発用）: ${smsResult.code}`)
+            alert(`${smsResult.message}\n\n開発環境: 認証コード ${smsResult.code}`)
+          } else {
+            alert(smsResult.message)
+          }
+        } else {
+          alert(`SMS送信に失敗: ${smsResult.message}`)
+          return
+        }
+      } catch (smsError) {
+        console.error('SMS API呼び出しエラー:', smsError)
+        alert('SMS送信サービスでエラーが発生しました。')
+        return
+      }
 
       setStep('verify')
     } catch (error) {

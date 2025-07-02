@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed-stores": "node scripts/seed-test-stores.js"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.10",
@@ -16,6 +17,7 @@
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "twilio": "^5.7.1",
     "zustand": "^5.0.6"
   },
   "devDependencies": {
