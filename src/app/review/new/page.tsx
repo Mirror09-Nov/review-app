@@ -65,33 +65,53 @@ function NewReviewForm() {
     }
   }, [searchParams])
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setIsSubmitting(true)
-  
-  try {
-    // 1. 店舗を検索または作成
-    let storeId
+    e.preventDefault()
+    setIsSubmitting(true)
     
-    // Google Place IDがある場合は既存店舗を検索
-    let existingStore = null
-    if (selectedPlace?.place_id) {
-      const { data } = await supabase
-        .from('stores')
-        .select('id')
-        .eq('google_place_id', selectedPlace.place_id)
-        .single()
-      existingStore = data
-    }
-    
-    // 既存店舗がない場合は店舗名で検索
-    if (!existingStore) {
-      const { data } = await supabase
-        .from('stores')
-        .select('id')
-        .eq('name', storeName)
-        .single()
-      existingStore = data
-    }
+    try {
+      console.log('=== レビュー投稿開始 ===')
+      console.log('環境変数確認:', {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL ? '設定済み' : '未設定',
+        key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '設定済み' : '未設定'
+      })
+      
+      // 1. 店舗を検索または作成
+      let storeId
+      
+      // Google Place IDがある場合は既存店舗を検索
+      let existingStore = null
+      if (selectedPlace?.place_id) {
+        console.log('Google Place IDで店舗検索:', selectedPlace.place_id)
+        const { data, error } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('google_place_id', selectedPlace.place_id)
+          .single()
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Google Place ID検索エラー:', error)
+        } else {
+          console.log('Google Place ID検索結果:', data)
+        }
+        existingStore = data
+      }
+      
+      // 既存店舗がない場合は店舗名で検索
+      if (!existingStore) {
+        console.log('店舗名で検索:', storeName)
+        const { data, error } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('name', storeName)
+          .single()
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('店舗名検索エラー:', error)
+        } else {
+          console.log('店舗名検索結果:', data)
+        }
+        existingStore = data
+      }
     
     if (existingStore) {
       // 既存店舗を使用
