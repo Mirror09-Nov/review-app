@@ -1,6 +1,6 @@
 'use client'
 
-import { Star, Building2, Edit3 } from 'lucide-react'
+import { Star, Building2, Edit3, BarChart3 } from 'lucide-react'
 import StoreList from '@/components/StoreList'
 import PlacesAutocomplete from '@/components/PlacesAutocomplete'
 import Link from 'next/link'
@@ -141,14 +141,26 @@ export default function HomePage() {
       </div>
 
       {/* 管理者ログインリンク */}
-      <div className="mt-12 text-center">
-        <Link 
-          href="/admin"
-          className="inline-flex items-center px-6 py-3 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition-colors"
-        >
-          <Building2 className="w-5 h-5 mr-2" />
-          店舗管理者としてログイン
-        </Link>
+      <div className="mt-12 text-center space-y-4">
+        <div className="flex justify-center space-x-4">
+          <Link 
+            href="/admin"
+            className="inline-flex items-center px-6 py-3 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition-colors"
+          >
+            <Building2 className="w-5 h-5 mr-2" />
+            店舗管理者としてログイン
+          </Link>
+          <Link 
+            href="/dashboard"
+            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-colors"
+          >
+            <BarChart3 className="w-5 h-5 mr-2" />
+            ダッシュボード
+          </Link>
+        </div>
+        <p className="text-sm text-gray-500">
+          店舗の運営状況やレビュー分析をダッシュボードで確認できます
+        </p>
       </div>
     </div>
   )
