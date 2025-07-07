@@ -6,6 +6,7 @@ interface CompetitorData {
   name: string;
   score: number;
   rating: number;
+  revenue: number;
   reviewCount: number;
 }
 
@@ -43,7 +44,7 @@ export const CompetitorComparison = ({ data }: CompetitorComparisonProps) => {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>評価: ⭐ {competitor.rating}</div>
-                  <div>レビュー: {competitor.reviewCount}件</div>
+                  <div>売上: ¥{competitor.revenue.toLocaleString()}</div>
                 </div>
               </div>
             ))}
@@ -54,9 +55,9 @@ export const CompetitorComparison = ({ data }: CompetitorComparisonProps) => {
       <div className="mt-6 p-4 bg-green-50 rounded-lg">
         <h4 className="font-medium text-green-900 mb-2">🎯 競合優位性</h4>
         <ul className="text-sm text-green-800 space-y-1">
-          <li>• 総合スコアで競合をリード</li>
-          <li>• 顧客満足度が高水準を維持</li>
-          <li>• レビュー数で競合を上回る</li>
+          <li>• 総合スコア1位を維持（85点）</li>
+          <li>• 顧客評価で競合を上回る（4.3/5.0）</li>
+          <li>• 売上高で業界平均を8%上回る</li>
         </ul>
       </div>
     </div>

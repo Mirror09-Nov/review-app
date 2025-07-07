@@ -4,6 +4,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 interface SalesData {
   month: string;
+  sales: number;
+  target: number;
   reviews: number;
   rating: number;
 }
@@ -15,31 +17,33 @@ interface SalesInsightsProps {
 export const SalesInsights = ({ data }: SalesInsightsProps) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">レビュー分析インサイト</h2>
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">売上連動インサイト</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <h3 className="text-lg font-medium text-gray-700 mb-3">月別レビュー数</h3>
+          <h3 className="text-lg font-medium text-gray-700 mb-3">月別売上実績 vs 目標</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip />
-              <Bar dataKey="reviews" fill="#3b82f6" name="レビュー数" />
+              <Tooltip formatter={(value) => [`¥${value.toLocaleString()}`, '']} />
+              <Bar dataKey="sales" fill="#3b82f6" name="実績" />
+              <Bar dataKey="target" fill="#e5e7eb" name="目標" />
             </BarChart>
           </ResponsiveContainer>
         </div>
         
         <div>
-          <h3 className="text-lg font-medium text-gray-700 mb-3">評価推移</h3>
+          <h3 className="text-lg font-medium text-gray-700 mb-3">売上トレンド</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
-              <YAxis domain={[0, 5]} />
-              <Tooltip formatter={(value) => [`${value}/5`, '評価']} />
-              <Line type="monotone" dataKey="rating" stroke="#3b82f6" strokeWidth={2} name="平均評価" />
+              <YAxis />
+              <Tooltip formatter={(value) => [`¥${value.toLocaleString()}`, '']} />
+              <Line type="monotone" dataKey="sales" stroke="#3b82f6" strokeWidth={2} name="実績" />
+              <Line type="monotone" dataKey="target" stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" name="目標" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -48,9 +52,9 @@ export const SalesInsights = ({ data }: SalesInsightsProps) => {
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">
         <h4 className="font-medium text-blue-900 mb-2">📈 インサイト</h4>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• レビュー数が継続的に増加傾向</li>
-          <li>• 顧客満足度が向上している</li>
-          <li>• 口コミマーケティングが効果を発揮</li>
+          <li>• 5月以降、売上目標を上回る成長を達成</li>
+          <li>• 前月比+6.7%の成長率を維持</li>
+          <li>• 競合他社と比較して12%高い成長率</li>
         </ul>
       </div>
     </div>
